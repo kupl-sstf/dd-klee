@@ -16,6 +16,7 @@ The available benchmark list is as follows:
 
 ## How to Build Benchmarks
 *Note that the provided script requires some dependencies. We provide a docker image (`koreaunivpl/dd-klee`) that contains all dependencies, but if you want to test with your local machine see [Requirements](#Requirements).*
+
 The provided script (`build-benchmark.sh`) will help you download and build the benchmarks.
 For example, if you want to build `combine-0.4.0` and `gcal-4.1`, just use the following command:
 ```bash
