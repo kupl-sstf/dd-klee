@@ -94,7 +94,8 @@ RUN useradd \
         -G sudo \
         -m -d /home/${USERNAME} -k /etc/skel \
         ${USERNAME} \
-    && sed -i -e 's/%sudo.*/%sudo\tALL=(ALL:ALL)\tNOPASSWD:ALL/g' /etc/sudoers
+    && sed -i -e 's/%sudo.*/%sudo\tALL=(ALL:ALL)\tNOPASSWD:ALL/g' /etc/sudoers \
+    && touch /home/${USERNAME}/.sudo_as_admin_successful
 USER ${USERNAME}
 
 # paradyse
