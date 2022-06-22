@@ -11,5 +11,6 @@ You can easily install it with your `pip`.
 For example, in Ubuntu 20.04 LTS, use the following command:
 ```bash
 $ sudo pip3 install git+https://github.com/skkusal/symtuner.git
+# You can find symtuner executable in your system.
 $ symtuner --help
 ```
