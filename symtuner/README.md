@@ -110,5 +110,5 @@ You can set the level as the depth to the root of the target object.
 
 For example, you should set `--gcov-depth` to `0` (which is `1` by default) to test `gawk-5.1.0`:
 ```bash
-$ symtuner --search-space no-optimize.json --gcov-depth 0 gawk-5.1.0/obj-llvm/gawk.bc gawk-5.1.0/obj-gcov/gawk
+$ symtuner --search-space examples/no-optimize.json --gcov-depth 0 gawk-5.1.0/obj-llvm/gawk.bc gawk-5.1.0/obj-gcov/gawk
 ```
