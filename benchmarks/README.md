@@ -39,17 +39,22 @@ $ sudo apt-get update
 $ sudo apt-get install -y --no-install-recommends \
     bison \
     build-essential \
-    cmake \
     clang-11 \
+    cmake \
     curl \
+    doxygen \
     file \
     flex \
+    g++-multilib \
+    gcc-multilib \
     git \
+    graphviz \
     language-pack-en \
     libboost-all-dev \
     libcap-dev \
     libgoogle-perftools-dev \
     libncurses5-dev \
+    libsqlite3-dev \
     libtcmalloc-minimal4 \
     llvm-11 \
     llvm-11-dev \
@@ -57,8 +62,6 @@ $ sudo apt-get install -y --no-install-recommends \
     locales \
     minisat2 \
     perl \
-    python \
-    python-pip \
     python3 \
     python3-dev \
     python3-pip \
