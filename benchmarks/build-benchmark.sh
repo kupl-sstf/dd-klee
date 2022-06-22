@@ -393,6 +393,32 @@ function build_nano-4.9 () {
     log INFO "Build process finished: nano-4.9"
 }
 
+function build_ptx-8.32 () {
+    cd $BASE_DIRECTORY
+    log INFO "Downloading: coreutils-8.32"
+    download_source_tgz coreutils-8.32 https://ftp.gnu.org/gnu/coreutils/coreutils-8.32.tar.gz
+    downloaded=$?
+    if [ $downloaded -ne 0 ]; then
+        log FAIL "Failed to build coreutils-8.32"
+        return 1
+    fi
+
+    cd $BASE_DIRECTORY/coreutils-8.32
+    log INFO "Build gcov object: ptx-8.32"
+    build_multiple_gcov_obj obj-gcov src/ptx
+    if [ $? -ne 0 ] ; then
+        log FAIL "Failed to build gcov object: ptx-8.32"
+    fi
+
+    cd $BASE_DIRECTORY/coreutils-8.32
+    log INFO "Build LLVM object: ptx-8.32"
+    build_multiple_llvm_obj obj-llvm src/ptx.bc src
+    if [ $? -ne 0 ] ; then
+        log FAIL "Failed to build LLVM object: ptx-8.32"
+    fi
+    log INFO "Build process finished: ptx-8.32"
+}
+
 function build_sed-4.8 () {
     cd $BASE_DIRECTORY
     log INFO "Downloading: sed-4.8"
@@ -499,6 +525,7 @@ Benchmark lists
     grep-3.4
     ls-8.32         coreutils-8.32
     nano-4.9
+    ptx-8.32        coreutils-8.32
     sed-4.8
     trueprint-5.4
     xorriso-1.5.2
@@ -518,6 +545,7 @@ function build () {
     "grep-3.4") build_grep-3.4;;
     "ls-8.32") build_ls-8.32;;
     "nano-4.9") build_nano-4.9;;
+    "ptx-8.32") build_ptx-8.32;;
     "sed-4.8") build_sed-4.8;;
     "trueprint-5.4") build_trueprint-5.4;;
     "xorriso-1.5.2") build_xorriso-1.5.2;;
