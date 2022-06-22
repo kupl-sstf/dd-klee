@@ -10,6 +10,7 @@ The available benchmark list is as follows:
 * grep-3.4
 * ls-8.32 (from coreutils-8.32)
 * nano-4.9
+* ptx-8.32
 * sed-4.8
 * trueprint-5.4
 * xorriso-1.5.2
