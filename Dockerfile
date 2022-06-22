@@ -94,9 +94,16 @@ RUN useradd \
         -G sudo \
         -m -d /home/${USERNAME} -k /etc/skel \
         ${USERNAME} \
-    && sed -i -e 's/%sudo.*/%sudo\tALL=(ALL:ALL)\tNOPASSWD:ALL/g' /etc/sudoers
+    && sed -i -e 's/%sudo.*/%sudo\tALL=(ALL:ALL)\tNOPASSWD:ALL/g' /etc/sudoers \
+    && touch /home/${USERNAME}/.sudo_as_admin_successful
 USER ${USERNAME}
 
-# paradyse
 WORKDIR /workspace
+# ParaDySE
 COPY paradyse /workspace/paradyse
+
+# SymTuner
+USER root
+RUN pip3 install git+https://github.com/skkusal/symtuner.git
+USER ${USERNAME}
+COPY symtuner /workspace/symtuner
