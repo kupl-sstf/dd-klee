@@ -22,7 +22,7 @@ We also privide a build script to build klee-testable projects.*
 
 You can test perform **KLEE+SymTuner** on the program `enscript-1.6.6` (which is built with the provided script) with the following command:
 ```bash
-$ symtuner -t 3600 -s spaces.json -d KLEE_SymTuner enscript-1.6.6/obj-llvm/src/enscript.bc enscript-1.6.6/obj-gcov/src/enscript 
+$ symtuner -t 3600 -s examples/spaces.json -d KLEE_SymTuner enscript-1.6.6/obj-llvm/src/enscript.bc enscript-1.6.6/obj-gcov/src/enscript 
 ```
 Then, you will see the testing progress as follows:
 ```
@@ -70,8 +70,8 @@ The option **`-t`** or **`--budget`** denotes the total testing time budget.
 
 ### Hyperparameters
 The hyperparameter `--search-space` is very important in our tool. You can check all the hyperparameters by passing `--help` option to SymTuner.
-| Option | Description |
-|:------:|:------------|
+| Option           | Description                                     |
+|:----------------:|:------------------------------------------------|
 | `--search-space` | Path to json file that defines parameter spaces |
 
 If you do not specify search space, SymTuner will use the parameter spaces predefined in our paper.
@@ -98,6 +98,8 @@ In the json file, there are two entries;
 }
 ```
 Each tuning space is defined by its candidate values, and the maximum number of times to be repeated.
+
+You can find some examples of json files that defines search space in [examples](./examples).
 
 ### Notes
 You may carefully pass the depth of parent directory to collect auxiliary files for Gcov.
