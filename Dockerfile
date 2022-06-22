@@ -1,73 +1,102 @@
-FROM klee/llvm:60_O_D_A_ubuntu_bionic-20200112 as llvm_base
-FROM klee/gtest:1.7.0_ubuntu_bionic-20200112 as gtest_base
-FROM klee/uclibc:klee_uclibc_v1.2_60_ubuntu_bionic-20200112 as uclibc_base
-FROM klee/tcmalloc:2.7_ubuntu_bionic-20200112 as tcmalloc_base
-FROM klee/stp:2.3.3_ubuntu_bionic-20200112 as stp_base
-FROM klee/z3:4.8.4_ubuntu_bionic-20200807 as z3_base
-FROM klee/libcxx:60_ubuntu_bionic-20200112 as libcxx_base
-FROM llvm_base as intermediate
-COPY --from=gtest_base /tmp /tmp/
-COPY --from=uclibc_base /tmp /tmp/
-COPY --from=tcmalloc_base /tmp /tmp/
-COPY --from=stp_base /tmp /tmp/
-COPY --from=z3_base /tmp /tmp/
-COPY --from=libcxx_base /tmp /tmp/
-ENV BASE=/tmp
-ENV COVERAGE=0
-ENV ENABLE_DOXYGEN=0
-ENV ENABLE_OPTIMIZED=1 
-ENV ENABLE_DEBUG=1
-ENV DISABLE_ASSERTIONS=0
-ENV REQUIRES_RTTI=0
-ENV LLVM_VERSION=6.0
-ENV GTEST_VERSION=1.7.0
-ENV UCLIBC_VERSION=klee_uclibc_v1.2
-ENV USE_TCMALLOC=1
-ENV TCMALLOC_VERSION=2.7
-ENV SOLVERS=STP:Z3
+FROM ubuntu:20.04
+
+USER root
+
+# Install dependencies
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        bison \
+        build-essential \
+        clang-11 \
+        cmake \
+        curl \
+        doxygen \
+        file \
+        flex \
+        g++-multilib \
+        gcc-multilib \
+        git \
+        graphviz \
+        language-pack-en \
+        libboost-all-dev \
+        libcap-dev \
+        libgoogle-perftools-dev \
+        libncurses5-dev \
+        libsqlite3-dev \
+        libtcmalloc-minimal4 \
+        llvm-11 \
+        llvm-11-dev \
+        llvm-11-tools \
+        locales \
+        minisat2 \
+        perl \
+        python3 \
+        python3-dev \
+        python3-pip \
+        python3-setuptools \
+        ssh-client \
+        sudo \
+        unzip \
+        zlib1g-dev \
+    && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+RUN pip3 install --no-cache-dir \
+        tabulate \
+        wllvm
+RUN locale-gen en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+ENV PATH=/usr/lib/llvm-11/bin:$PATH
+
+# Install DD-KLEE
+
 ENV STP_VERSION=2.3.3
-ENV Z3_VERSION=4.8.4
-ENV MINISAT_VERSION=master
-ENV USE_LIBCXX=1
-ENV SANITIZER_BUILD=
-ENV KLEE_RUNTIME_BUILD="Debug"
+WORKDIR /opt
+RUN git clone -b ${STP_VERSION} --depth 1 https://github.com/stp/stp.git
+WORKDIR /opt/stp/build
+RUN cmake -DBUILD-SHARED_LIBS:BOOL=OFF -DENABLE_PYTHON_INTERFACE:BOOL=OFF .. && \
+    make && \
+    make install
 
-LABEL maintainer="kupl"
+ENV KLEE_UCLIBC_VERSION=klee_uclibc_v1.3
+WORKDIR /opt
+RUN git clone -b ${KLEE_UCLIBC_VERSION} --depth 1 https://github.com/klee/klee-uclibc.git
+WORKDIR /opt/klee-uclibc
+RUN ./configure --make-llvm-lib && make
 
-ENV SRC_DIR=dd-klee_src
-ENV BUILD_DIR=dd-klee_build
+WORKDIR /opt
+# COPY klee /opt/klee-src
+ENV KLEE_VERSION=v2.2
+RUN git clone -b ${KLEE_VERSION} --depth 1 https://github.com/klee/klee.git klee-src
+WORKDIR /opt/klee-src
+RUN LLVM_VERSION=11 BASE=/opt/klee-libcxx ./scripts/build/build.sh libcxx
 
-# Create ``kupl`` user with password ``kupl``,
-# given password-less sudo access
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt -y --no-install-recommends install \
-    sudo emacs-nox vim-nox file python3-dateutil wget git && \
-    rm -rf /var/lib/apt/lists/* && \
-    useradd -m kupl && \
-    echo kupl:kupl | chpasswd && \
-    cp /etc/sudoers /etc/sudoers.bak && \
-    echo 'kupl  ALL=(root) NOPASSWD: ALL' >> /etc/sudoers
+WORKDIR /opt/klee-bin
+RUN cmake \
+        -DENABLE_SOLVER_STP=ON \
+        -DENABLE_POSIX_RUNTIME=ON \
+        -DENABLE_KLEE_UCLIBC=ON \
+        -DKLEE_UCLIBC_PATH=/opt/klee-uclibc \
+        -DENABLE_KLEE_LIBCXX=ON \
+        -DKLEE_LIBCXX_DIR=/opt/klee-libcxx/libc++-install-110 \
+        -DKLEE_LIBCXX_INCLUDE_DIR=/opt/klee-libcxx/libc++-install-110/include/c++/v1 \
+        -DENABLE_UNIT_TESTS=OFF \
+        -DENABLE_SYSTEM_TESTS=OFF \
+        /opt/klee-src \
+    && make
+ENV PATH=/opt/klee-bin/bin:$PATH
 
+# Make non-root user
+ARG USERNAME=ddklee
+RUN useradd \
+        --shell $(which bash) \
+        -G sudo \
+        -m -d /home/${USERNAME} -k /etc/skel \
+        ${USERNAME} \
+    && sed -i -e 's/%sudo.*/%sudo\tALL=(ALL:ALL)\tNOPASSWD:ALL/g' /etc/sudoers
+USER ${USERNAME}
 
-# Copy across source files needed for build
-COPY --chown=kupl:kupl . /tmp/${SRC_DIR}
-
-# Build and set kupl to be owner
-RUN /tmp/${SRC_DIR}/klee/scripts/build/build.sh --debug --install-system-deps klee && chown -R kupl:kupl /tmp/${BUILD_DIR}* && pip3 install flask wllvm && \
-    rm -rf /var/lib/apt/lists/*
-
-ENV BASE=/tmp
-
-# Add KLEE header files to system standard include folder
-RUN /bin/bash -c 'ln -s ${BASE}/${SRC_DIR}/klee/include/klee /usr/include/'
-
-USER kupl
-WORKDIR /home/kupl
-
-# Add symbolic link to src, build directory at home
-RUN /bin/bash -c 'ln -s ${BASE}/${SRC_DIR} /home/kupl/ && ln -s ${BASE}/${BUILD_DIR}* /home/kupl/${BUILD_DIR}' 
-
-# Add KLEE binary directory to PATH
-ENV PATH="$PATH:/tmp/llvm-60-install_O_D_A/bin:/home/kupl/${BUILD_DIR}/bin"
-
-# Add KLEE library directory to LD_LIBRARY_PATH
-RUN /bin/bash -c 'echo "export LLVM_COMPILER=clang" >> /home/kupl/.bashrc'
+# paradyse
+WORKDIR /workspace
+COPY paradyse /workspace/paradyse

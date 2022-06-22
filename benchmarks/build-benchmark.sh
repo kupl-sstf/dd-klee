@@ -289,32 +289,6 @@ function build_gawk-5.1.0 () {
     log INFO "Build process finished: gawk-5.1.0"
 }
 
-function build_gcal-4.1 () {
-    cd $BASE_DIRECTORY
-    log INFO "Downloading: gcal-4.1"
-    download_source_tgz gcal-4.1 https://ftp.gnu.org/gnu/gcal/gcal-4.1.tar.gz
-    downloaded=$?
-    if [ $downloaded -ne 0 ]; then
-        log FAIL "Failed to build gcal-4.1"
-        return 1
-    fi
-
-    cd $BASE_DIRECTORY/gcal-4.1
-    log INFO "Build gcov object: gcal-4.1"
-    build_multiple_gcov_obj obj-gcov src/gcal
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build gcov object: gcal-4.1"
-    fi
-
-    cd $BASE_DIRECTORY/gcal-4.1
-    log INFO "Build LLVM object: gcal-4.1"
-    build_multiple_llvm_obj obj-llvm src/gcal.bc src
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build LLVM object: gcal-4.1"
-    fi
-    log INFO "Build process finished: gcal-4.1"
-}
-
 function build_grep-3.4 () {
     cd $BASE_DIRECTORY
     log INFO "Downloading: grep-3.4"
@@ -521,7 +495,6 @@ Benchmark lists
     du-8.32         coreutils-8.32
     enscript-1.6.6
     gawk-5.1.0
-    gcal-4.1
     grep-3.4
     ls-8.32         coreutils-8.32
     nano-4.9
@@ -541,7 +514,6 @@ function build () {
     "du-8.32") build_du-8.32;;
     "enscript-1.6.6") build_enscript-1.6.6;;
     "gawk-5.1.0") build_gawk-5.1.0;;
-    "gcal-4.1") build_gcal-4.1;;
     "grep-3.4") build_grep-3.4;;
     "ls-8.32") build_ls-8.32;;
     "nano-4.9") build_nano-4.9;;
@@ -575,7 +547,7 @@ if [ "$1" = "--n-objs" ] ; then
 fi
 
 if [ "$1" = "all" ] ; then
-    benchmarks="combine-0.4.0 diff-3.7 du-8.32 enscript-1.6.6 gawk-5.1.0 gcal-4.1 grep-3.4 ls-8.32 nano-4.9 sed-4.8 trueprint-5.4 xorriso-1.5.2"
+    benchmarks="combine-0.4.0 diff-3.7 du-8.32 enscript-1.6.6 gawk-5.1.0 grep-3.4 ls-8.32 nano-4.9 ptx-8.32 sed-4.8 trueprint-5.4 xorriso-1.5.2"
 else
     benchmarks=$@
 fi
