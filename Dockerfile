@@ -98,6 +98,12 @@ RUN useradd \
     && touch /home/${USERNAME}/.sudo_as_admin_successful
 USER ${USERNAME}
 
-# paradyse
 WORKDIR /workspace
+# ParaDySE
 COPY paradyse /workspace/paradyse
+
+# SymTuner
+USER root
+RUN pip3 install git+https://github.com/skkusal/symtuner.git
+USER ${USERNAME}
+COPY symtuner /workspace/symtuner
