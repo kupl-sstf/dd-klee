@@ -14,9 +14,9 @@ DD-KLEE is a data-driven symbolic execution engine, implemented on top of [KLEE]
 
 ### From Source
 
-Currently, out tool is implemented on top of 2.1 version of KLEE. Thus, we recommend to build with LLVM 6.0.  The steps you should take are exactly same with the ones described in [Building KLEE with LLVM 6.0](https://klee.github.io/releases/docs/v2.1/build-llvm60/), official documentation of vanilla KLEE.
+Currently, our tool is implemented on top of KLEE 2.2. The steps you should take are exactly same with the ones described in [Building KLEE with LLVM 9](https://klee.github.io/releases/docs/v2.2/build-llvm9/), official documentation of vanilla KLEE. (except that we build the tool with LLVM 11.)
 
-Thus, here we briefly provide the configuration to setup KLEE  and to use approaches described in our papers, which will reproduce the experimental results most closely.
+Thus, here we briefly provide the configuration to setup KLEE and to use approaches described in our papers, which will reproduce the experimental results most closely.
 
 #### Constraint solver
 
@@ -25,7 +25,7 @@ Thus, here we briefly provide the configuration to setup KLEE  and to use approa
 
 #### C/C++ library
 
-* klee-uclibc (v1.2): not supported on macOS
+* klee-uclibc (v1.3): not supported on macOS
 
   This should be installed to enable the POSIX environment model, which is used in our experiments on GNU benchmarks.
 
@@ -34,7 +34,7 @@ Thus, here we briefly provide the configuration to setup KLEE  and to use approa
   You can build with the scripts provided by KLEE, with following command.
 
 ```sh
-LLVM_VERSION=6 SANITIZER_BUILD= BASE=<LIBCXX_INSTALL_DIR> REQUIRES_RTTI=1 DISABLE_ASSERTIONS=1 ENABLE_DEBUG=0 ENABLE_OPTIMIZED=1 ./klee/scripts/build/build.sh libcxx
+LLVM_VERSION=11 SANITIZER_BUILD= BASE=<LIBCXX_INSTALL_DIR> REQUIRES_RTTI=1 DISABLE_ASSERTIONS=1 ENABLE_DEBUG=0 ENABLE_OPTIMIZED=1 ./klee/scripts/build/build.sh libcxx
 ```
 
 #### KLEE
@@ -52,66 +52,52 @@ cmake \
 	-DKLEE_UCLIBC_PATH=<KLEE_UCLIBC_SOURCE_DIR> \ 
 	-DENABLE_UNIT_TESTS=OFF \
 	-DENABLE_SYSTEM_TESTS=OFF \
-	-DLLVM_CONFIG_BINARY=<PATH_TO_llvm-config-6.0> \
-	-DLLVMCC=<PATH_TO_clang-6.0> \
-	-DLLVMCXX=<PATH_TO_clang++-6.0> \
+	-DLLVM_CONFIG_BINARY=<PATH_TO_llvm-config-11> \
+	-DLLVMCC=<PATH_TO_clang-11> \
+	-DLLVMCXX=<PATH_TO_clang++-11> \
 	-DENABLE_KLEE_LIBCXX=ON \
-	-DKLEE_LIBCXX_DIR=<LIBCXX_INSTALL_DIR>/libc++-install-60 \
-	-DKLEE_LIBCXX_INCLUDE_DIR=<LIBCXX_INSTALL_DIR>/libc++-install-60/include/c++/v1 \
+	-DKLEE_LIBCXX_DIR=<LIBCXX_INSTALL_DIR>/libc++-install-110 \
+	-DKLEE_LIBCXX_INCLUDE_DIR=<LIBCXX_INSTALL_DIR>/libc++-install-110/include/c++/v1 \
 	<dd-klee_SRC_DIRECTORY>/klee
 make
 ```
 
 ### Vagrant Box
 
-We provide a Vagrant Box to easily setup environment for our tool. The `Vagrantfile` is supplied to build a box with Ubuntu 18.04 LTS running on VirtualBox machine. For installation and detailed manual of it, read [Vagrant](https://vagrantup.com).
+We provide a Vagrant Box to easily setup environment for our tool. The `Vagrantfile` is supplied to build a box with Ubuntu 20.04 LTS running on VirtualBox machine. For installation and detailed manual of it, read [Vagrant](https://vagrantup.com).
 
 You can customize virtual machine, depending on your system spec. The following part of `Vagrantfile` can be modified for such purpose.
 
 ```ruby
 Vagrant.configure("2") do |config|
-  config.vagrant.plugins = ["vagrant-disksize", "vagrant-vbguest"]
+  # Disksize
   config.disksize.size = "20GB"
-  # ...
+
   config.vm.provider "virtualbox" do |vb|
-    vb.memory = "2048"
+    vb.memory = "8192"
     vb.cpus = "2"
-    # ...
-  end  
-  # ...
+  end
 end
 ```
 
-A command below from the project directory (where `Vagrantfile` is located) creates a virtual machine and installs some dependencies, which may be better to be installed on system. If you want to configure it, see `bootstrap.sh`.
+The following command creates a virtual machine and installs KLEE with its dependencies.
 
 ```sh
 vagrant up
 ```
 
-Next, you should install main `dd-klee`. This proedure is done with `provision`, the subcommand of `vagrant`. Provisioning with `klee_deps` builds some dependencies (e.g. STP) from source. This is done by the script `install_deps.sh`. Provisioning with `klee` builds our extension of KLEE. The script `install_klee.sh` is used and it includes `cmake` usage described in the section [From Source](#From-Source).
-
-```sh
-vagrant provision --with-provision klee_deps,klee
-```
-
-Now you can `ssh` the Ubuntu 18.04 VirtualBox machine and use our tool. It's easy to halt the machine after exitting ssh session.
+Now you can `ssh` the Ubuntu 20.04 VirtualBox machine and use our tool.
 
 ```sh
 vagrant ssh
 
-# halt the machine after exitting ssh
+# halt the machine after exitting ssh session
 vagrant halt
-```
-
-If you've done `vagrant up` once, it is not necessary to update and install dependent softwares (by `bootstrap.sh`) every time you run the machine. Then, the option  `--no-provision` is useful to power on the machine quickly.
-
-```sh
-vagrant up --no-provision
 ```
 
 ### Docker Image
 
-We provide a `Dockerfile` to build docker image. This uses the build script provided by vanilla KLEE, which is explained in [Building KLEE and its dependencies](http://klee.github.io/build-script/). 
+We provide a `Dockerfile` to build docker image to run KLEE. It also provides several benchmarks referred in our papers. 
 
 ```sh
 docker build -t kupl/dd-klee .
@@ -124,6 +110,8 @@ We provide separate manuals for each approach we've taken on top of KLEE.
 Pointers to get you started:
 
 - [ParaDySE(Parametric Dynamic Symbolic Execution)](paradyse)
+
+- [SymTuner(Maximizing the Power of Symbolic Execution by Adaptively Tuning External Parameters)](symtuner)
 
 # Resources
 
