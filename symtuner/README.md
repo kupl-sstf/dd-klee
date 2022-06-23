@@ -20,23 +20,23 @@ $ symtuner --help
 Please see [benchmarks](../benchmarks) to see how to compile project with required features.
 We also privide a build script to build klee-testable projects.*
 
-You can test perform **KLEE+SymTuner** on the program `enscript-1.6.6` (which is built with the provided script) with the following command:
+You can test perform **KLEE+SymTuner** on the program `grep-3.4` (which is built with the provided script) with the following command:
 ```bash
-$ symtuner -t 3600 -s examples/spaces.json -d KLEE_SymTuner enscript-1.6.6/obj-llvm/src/enscript.bc enscript-1.6.6/obj-gcov/src/enscript 
+$ symtuner -t 3600 -s examples/spaces.json -d KLEE_SymTuner ../benchmarks/grep-3.4/obj-llvm/src/grep.bc ../benchmarks/grep-3.4/obj-gcov/src/grep 
 ```
 Then, you will see the testing progress as follows:
 ```
 ...
-2022-01-10 14:08:26 symtuner [INFO] All configuration loaded. Start testing.
-2022-01-10 14:09:03 symtuner [INFO] Iteration: 1 Time budget: 30 Time elapsed: 36 Coverage: 1125 Bugs: 0
-2022-01-10 14:09:40 symtuner [INFO] Iteration: 2 Time budget: 30 Time elapsed: 73 Coverage: 1144 Bugs: 0
-2022-01-10 14:10:17 symtuner [INFO] Iteration: 3 Time budget: 30 Time elapsed: 111 Coverage: 1395 Bugs: 0
+2022-06-23 06:52:04 symtuner [INFO] All configuration loaded. Start testing.
+2022-06-23 06:52:39 symtuner [INFO] Iteration: 1 Time budget: 30 Time elapsed: 34 Coverage: 1209 Bugs: 0
+2022-06-23 06:53:14 symtuner [INFO] Iteration: 2 Time budget: 30 Time elapsed: 70 Coverage: 1548 Bugs: 0
+2022-06-23 06:54:03 symtuner [INFO] Iteration: 3 Time budget: 30 Time elapsed: 118 Coverage: 1578 Bugs: 0
 ...
 ```
 When SymTuner successfully terminates, you can see the following output:
 ```
 ...
-2022-01-10 15:08:55 symtuner [INFO] SymTuner done. Achieve 2756 coverage and found 1 bug.
+2022-06-23 07:52:13 symtuner [INFO] SymTuner done. Achieve 3105 coverage and found 0 bugs.
 ```
 
 ## Usage
@@ -84,7 +84,7 @@ $ symtuner --generate-search-space-json
 
 In the json file, there are two entries;
 `space` for parameters to be tuned by SymTuner, and `defaults` for parameters to use directly without tuning.
-```
+```json
 {
     "space": {
         "-max-memory": [[500, 1000, 1500, 2000, 2500], 1],
@@ -110,5 +110,5 @@ You can set the level as the depth to the root of the target object.
 
 For example, you should set `--gcov-depth` to `0` (which is `1` by default) to test `gawk-5.1.0`:
 ```bash
-$ symtuner --search-space examples/no-optimize.json --gcov-depth 0 gawk-5.1.0/obj-llvm/gawk.bc gawk-5.1.0/obj-gcov/gawk
+$ symtuner -t 3600 --search-space examples/no-optimize.json --gcov-depth 0 ../benchmarks/gawk-5.1.0/obj-llvm/gawk.bc ../benchmarks/gawk-5.1.0/obj-gcov/gawk
 ```
