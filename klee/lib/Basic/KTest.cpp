@@ -7,13 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "klee/Internal/ADT/KTest.h"
+#include "klee/ADT/KTest.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <time.h>
-#include <string>
+
 #define KTEST_VERSION 3
 #define KTEST_MAGIC_SIZE 5
 #define KTEST_MAGIC "KTEST"
@@ -22,14 +21,6 @@
 #define BOUT_MAGIC "BOUT\n"
 
 /***/
-const std::string currentDateTime() {
-  time_t now = time(0); 
-  struct tm tstruct;
-  char buf[80];
-  tstruct = *localtime(&now);
-  strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
-  return buf;
-}
 
 static int read_uint32(FILE *f, unsigned *value_out) {
   unsigned char data[4];
@@ -186,7 +177,6 @@ KTest *kTest_fromFile(const char *path) {
 
 int kTest_toFile(KTest *bo, const char *path) {
   FILE *f = fopen(path, "wb");
-  FILE *t = fopen("time_result", "a");
   unsigned i;
 
   if (!f) 
@@ -219,14 +209,11 @@ int kTest_toFile(KTest *bo, const char *path) {
     if (fwrite(o->bytes, o->numBytes, 1, f)!=1)
       goto error;
   }
-  fprintf(t, "%s: %s\n", path, currentDateTime().c_str());
-  
-  fclose(t);
+
   fclose(f);
 
   return 1;
  error:
-  if (t) fclose(t);
   if (f) fclose(f);
   
   return 0;
