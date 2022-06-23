@@ -131,9 +131,7 @@ function build_llvm_obj () {
     if [ $? -ne 0 ]; then
         return 1
     fi
-    if ! [ -z $3 ]; then 
-        cd $3
-    fi
+    cd $(dirname $2)
     find . -executable -type f | xargs -I '{}' extract-bc '{}'
     cd $base_dir
     if ! [ -f "$1/$2" ]; then
@@ -159,6 +157,23 @@ function build_multiple_llvm_obj () {
     done
 }
 
+function build_benchmark () {
+    cd $BASE_DIRECTORY/$1
+    log INFO "Build gcov object: $1"
+    build_multiple_gcov_obj obj-gcov $2
+    if [ $? -ne 0 ] ; then
+        log FAIL "Failed to build gcov object: $1"
+    fi
+
+    cd $BASE_DIRECTORY/$1
+    log INFO "Build LLVM object: $1"
+    build_multiple_llvm_obj obj-llvm $2.bc $1
+    if [ $? -ne 0 ] ; then
+        log FAIL "Failed to build LLVM object: $1"
+    fi
+    log INFO "Build process finished: $1"
+}
+
 function build_combine-0.4.0 () {
     cd $BASE_DIRECTORY
     log INFO "Downloading: combine-0.4.0"
@@ -169,20 +184,7 @@ function build_combine-0.4.0 () {
         return 1
     fi
 
-    cd $BASE_DIRECTORY/combine-0.4.0
-    log INFO "Build gcov object: combine-0.4.0"
-    build_multiple_gcov_obj obj-gcov src/combine
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build gcov object: combine-0.4.0"
-    fi
-
-    cd $BASE_DIRECTORY/combine-0.4.0
-    log INFO "Build LLVM object: combine-0.4.0"
-    build_multiple_llvm_obj obj-llvm src/combine.bc src
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build LLVM object: combine-0.4.0"
-    fi
-    log INFO "Build process finished: combine-0.4.0"
+    build_benchmark combine-0.4.0 src/combine
 }
 
 function build_diff-3.7 () {
@@ -195,20 +197,7 @@ function build_diff-3.7 () {
         return 1
     fi
 
-    cd $BASE_DIRECTORY/diffutils-3.7
-    log INFO "Build gcov object: diff-3.7"
-    build_multiple_gcov_obj obj-gcov src/diff
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build gcov object: diff-3.7"
-    fi
-
-    cd $BASE_DIRECTORY/diffutils-3.7
-    log INFO "Build LLVM object: diff-3.7"
-    build_multiple_llvm_obj obj-llvm src/diff.bc src
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build LLVM object: diff-3.7"
-    fi
-    log INFO "Build process finished: diff-3.7"
+    build_benchmark diffutils-3.7 src/diff
 }
 
 function build_du-8.32 () {
@@ -221,20 +210,7 @@ function build_du-8.32 () {
         return 1
     fi
 
-    cd $BASE_DIRECTORY/coreutils-8.32
-    log INFO "Build gcov object: du-8.32"
-    build_multiple_gcov_obj obj-gcov src/du
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build gcov object: du-8.32"
-    fi
-
-    cd $BASE_DIRECTORY/coreutils-8.32
-    log INFO "Build LLVM object: du-8.32"
-    build_multiple_llvm_obj obj-llvm src/du.bc src
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build LLVM object: du-8.32"
-    fi
-    log INFO "Build process finished: du-8.32"
+    build_benchmark coreutils-8.32 src/du
 }
 
 function build_enscript-1.6.6 () {
@@ -247,20 +223,7 @@ function build_enscript-1.6.6 () {
         return 1
     fi
 
-    cd $BASE_DIRECTORY/enscript-1.6.6
-    log INFO "Build gcov object: enscript-1.6.6"
-    build_multiple_gcov_obj obj-gcov src/enscript
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build gcov object: enscript-1.6.6"
-    fi
-
-    cd $BASE_DIRECTORY/enscript-1.6.6
-    log INFO "Build LLVM object: enscript-1.6.6"
-    build_multiple_llvm_obj obj-llvm src/enscript.bc src
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build LLVM object: enscript-1.6.6"
-    fi
-    log INFO "Build process finished: enscript-1.6.6"
+    build_benchmark enscript-1.6.6 src/enscript
 }
 
 function build_gawk-5.1.0 () {
@@ -273,20 +236,7 @@ function build_gawk-5.1.0 () {
         return 1
     fi
 
-    cd $BASE_DIRECTORY/gawk-5.1.0
-    log INFO "Build gcov object: gawk-5.1.0"
-    build_multiple_gcov_obj obj-gcov gawk
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build gcov object: gawk-5.1.0"
-    fi
-
-    cd $BASE_DIRECTORY/gawk-5.1.0
-    log INFO "Build LLVM object: gawk-5.1.0"
-    build_multiple_llvm_obj obj-llvm gawk.bc
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build LLVM object: gawk-5.1.0"
-    fi
-    log INFO "Build process finished: gawk-5.1.0"
+    build_benchmark gawk-5.1.0 gawk
 }
 
 function build_grep-3.4 () {
@@ -299,20 +249,7 @@ function build_grep-3.4 () {
         return 1
     fi
 
-    cd $BASE_DIRECTORY/grep-3.4
-    log INFO "Build gcov object: grep-3.4"
-    build_multiple_gcov_obj obj-gcov src/grep
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build gcov object: grep-3.4"
-    fi
-
-    cd $BASE_DIRECTORY/grep-3.4
-    log INFO "Build LLVM object: grep-3.4"
-    build_multiple_llvm_obj obj-llvm src/grep.bc src
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build LLVM object: grep-3.4"
-    fi
-    log INFO "Build process finished: grep-3.4"
+    build_benchmark grep-3.4 src/grep
 }
 
 function build_ls-8.32 () {
@@ -325,20 +262,7 @@ function build_ls-8.32 () {
         return 1
     fi
 
-    cd $BASE_DIRECTORY/coreutils-8.32
-    log INFO "Build gcov object: ls-8.32"
-    build_multiple_gcov_obj obj-gcov src/ls
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build gcov object: ls-8.32"
-    fi
-
-    cd $BASE_DIRECTORY/coreutils-8.32
-    log INFO "Build LLVM object: ls-8.32"
-    build_multiple_llvm_obj obj-llvm src/ls.bc src
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build LLVM object: ls-8.32"
-    fi
-    log INFO "Build process finished: ls-8.32"
+    build_benchmark coreutils-8.32 src/ls
 }
 
 function build_nano-4.9 () {
@@ -351,20 +275,7 @@ function build_nano-4.9 () {
         return 1
     fi
 
-    cd $BASE_DIRECTORY/nano-4.9
-    log INFO "Build gcov object: nano-4.9"
-    build_multiple_gcov_obj obj-gcov src/nano
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build gcov object: nano-4.9"
-    fi
-
-    cd $BASE_DIRECTORY/nano-4.9
-    log INFO "Build LLVM object: nano-4.9"
-    build_multiple_llvm_obj obj-llvm src/nano.bc src
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build LLVM object: nano-4.9"
-    fi
-    log INFO "Build process finished: nano-4.9"
+    build_benchmark nano-4.9 src/nano
 }
 
 function build_ptx-8.32 () {
@@ -377,20 +288,7 @@ function build_ptx-8.32 () {
         return 1
     fi
 
-    cd $BASE_DIRECTORY/coreutils-8.32
-    log INFO "Build gcov object: ptx-8.32"
-    build_multiple_gcov_obj obj-gcov src/ptx
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build gcov object: ptx-8.32"
-    fi
-
-    cd $BASE_DIRECTORY/coreutils-8.32
-    log INFO "Build LLVM object: ptx-8.32"
-    build_multiple_llvm_obj obj-llvm src/ptx.bc src
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build LLVM object: ptx-8.32"
-    fi
-    log INFO "Build process finished: ptx-8.32"
+    build_benchmark coreutils-8.32 src/ptx
 }
 
 function build_sed-4.8 () {
@@ -403,20 +301,7 @@ function build_sed-4.8 () {
         return 1
     fi
 
-    cd $BASE_DIRECTORY/sed-4.8
-    log INFO "Build gcov object: sed-4.8"
-    build_multiple_gcov_obj obj-gcov sed/sed
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build gcov object: sed-4.8"
-    fi
-
-    cd $BASE_DIRECTORY/sed-4.8
-    log INFO "Build LLVM object: sed-4.8"
-    build_multiple_llvm_obj obj-llvm sed/sed.bc sed
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build LLVM object: sed-4.8"
-    fi
-    log INFO "Build process finished: sed-4.8"
+    build_benchmark sed-4.8 sed/sed
 }
 
 function build_trueprint-5.4 () {
@@ -429,20 +314,7 @@ function build_trueprint-5.4 () {
         return 1
     fi
 
-    cd $BASE_DIRECTORY/trueprint-5.4
-    log INFO "Build gcov object: trueprint-5.4"
-    build_multiple_gcov_obj obj-gcov src/trueprint
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build gcov object: trueprint-5.4"
-    fi
-
-    cd $BASE_DIRECTORY/trueprint-5.4
-    log INFO "Build LLVM object: trueprint-5.4"
-    build_multiple_llvm_obj obj-llvm src/trueprint.bc src
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build LLVM object: trueprint-5.4"
-    fi
-    log INFO "Build process finished: trueprint-5.4"
+    build_benchmark trueprint-5.4 src/trueprint
 }
 
 function build_xorriso-1.5.2 () {
@@ -455,20 +327,19 @@ function build_xorriso-1.5.2 () {
         return 1
     fi
 
-    cd $BASE_DIRECTORY/xorriso-1.5.2
-    log INFO "Build gcov object: xorriso-1.5.2"
-    build_multiple_gcov_obj obj-gcov xorriso/xorriso
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build gcov object: xorriso-1.5.2"
+    build_benchmark xorriso-1.5.2 xorriso/xorriso
+}
+
+function build_own_benchmark () {
+    cd $BASE_DIRECTORY
+    IFS=: read project bin <<< $1
+
+    if [ ! -d $BASE_DIRECTORY/${project} ] ; then
+        log FAIL "Benchmark not found: ${project}"
+        return 1
     fi
 
-    cd $BASE_DIRECTORY/xorriso-1.5.2
-    log INFO "Build LLVM object: xorriso-1.5.2"
-    build_multiple_llvm_obj obj-llvm xorriso/xorriso.bc xorriso
-    if [ $? -ne 0 ] ; then
-        log FAIL "Failed to build LLVM object: xorriso-1.5.2"
-    fi
-    log INFO "Build process finished: xorriso-1.5.2"
+    build_benchmark ${project} ${bin}
 }
 
 function help () {
@@ -503,6 +374,7 @@ Benchmark lists
     trueprint-5.4
     xorriso-1.5.2
     all             download and build all
+    <your-project>  your own benchmark, project-root:target-binary-from-project-root
 EOF
 }
 
@@ -521,7 +393,7 @@ function build () {
     "sed-4.8") build_sed-4.8;;
     "trueprint-5.4") build_trueprint-5.4;;
     "xorriso-1.5.2") build_xorriso-1.5.2;;
-    *) log WARN "Unknown benchmark: $1";;
+    *) build_own_benchmark $1;;
     esac
 }
 
