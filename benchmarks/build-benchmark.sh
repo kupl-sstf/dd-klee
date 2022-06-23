@@ -333,6 +333,7 @@ function build_xorriso-1.5.2 () {
 function build_own_benchmark () {
     cd $BASE_DIRECTORY
     IFS=: read project bin <<< $1
+    project=$(realpath --relative-to ${BASE_DIRECTORY} $project)
 
     if [ ! -d $BASE_DIRECTORY/${project} ] ; then
         log FAIL "Benchmark not found: ${project}"
