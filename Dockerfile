@@ -66,7 +66,6 @@ WORKDIR /opt/klee-uclibc
 RUN ./configure --make-llvm-lib && make
 
 WORKDIR /opt
-# COPY klee /opt/klee-src
 COPY klee /opt/klee-src
 WORKDIR /opt/klee-src
 RUN LLVM_VERSION=11 BASE=/opt/klee-libcxx ./scripts/build/build.sh libcxx
