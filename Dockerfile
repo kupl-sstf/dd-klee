@@ -97,7 +97,7 @@ RUN useradd \
     && sed -i -e 's/%sudo.*/%sudo\tALL=(ALL:ALL)\tNOPASSWD:ALL/g' /etc/sudoers \
     && touch /home/${USERNAME}/.sudo_as_admin_successful
 
-RUN mkdir 777 /workspaces
+RUN mkdir -m 777 /workspace
 
 # ParaDySE
 COPY --chown=${USERNAME}:${USERNAME} paradyse /workspace/paradyse
