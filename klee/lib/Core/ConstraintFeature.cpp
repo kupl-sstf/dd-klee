@@ -4,9 +4,9 @@
 #include "FeatureStats.h"
 #include "StatsTracker.h"
 
-#include "klee/ExecutionState.h"
-#include "klee/Internal/Module/KModule.h"
-#include "klee/Internal/Module/KInstruction.h"
+#include "ExecutionState.h"
+#include "klee/Module/KModule.h"
+#include "klee/Module/KInstruction.h"
 
 #include "llvm/Analysis/LoopInfo.h"
 #include "llvm/IR/Dominators.h"
@@ -22,7 +22,7 @@ FQueryCost::operator()(const std::vector<ExecutionState*> &states) {
   std::set<std::pair<double, ExecutionState*>> st_set;
 
   for(const auto &st : states) {
-    double qc = st->queryCost.toSeconds();
+    double qc = st->queryMetaData.queryCost.toSeconds();
     st_set.insert(std::make_pair(qc, st));
   }
 

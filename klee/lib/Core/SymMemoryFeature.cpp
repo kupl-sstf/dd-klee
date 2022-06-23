@@ -4,7 +4,7 @@
 #include "FeatureStats.h"
 #include "SymMemoryFeature.h"
 
-#include "klee/ExecutionState.h"
+#include "ExecutionState.h"
 
 #include <set>
 #include <vector>
