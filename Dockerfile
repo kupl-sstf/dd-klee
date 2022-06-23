@@ -96,14 +96,21 @@ RUN useradd \
         ${USERNAME} \
     && sed -i -e 's/%sudo.*/%sudo\tALL=(ALL:ALL)\tNOPASSWD:ALL/g' /etc/sudoers \
     && touch /home/${USERNAME}/.sudo_as_admin_successful
-USER ${USERNAME}
 
-WORKDIR /workspace
+RUN mkdir 777 /workspaces
+
 # ParaDySE
-COPY paradyse /workspace/paradyse
+COPY --chown=${USERNAME}:${USERNAME} paradyse /workspace/paradyse
 
 # SymTuner
-USER root
 RUN pip3 install git+https://github.com/skkusal/symtuner.git
+COPY --chown=${USERNAME}:${USERNAME} symtuner /workspace/symtuner
+
+# Benchmarks
+COPY --chown=${USERNAME}:${USERNAME} benchmarks/build-benchmark.sh benchmarks/README.md /workspace/benchmarks/
+WORKDIR /workspace/benchmarks
+RUN ./build-benchmark.sh all
+
+# Entry point
 USER ${USERNAME}
-COPY symtuner /workspace/symtuner
+WORKDIR /workspace
