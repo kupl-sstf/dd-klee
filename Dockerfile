@@ -109,8 +109,8 @@ COPY --chown=${USERNAME}:${USERNAME} symtuner /workspace/symtuner
 # Benchmarks
 COPY --chown=${USERNAME}:${USERNAME} benchmarks/build-benchmark.sh benchmarks/README.md /workspace/benchmarks/
 WORKDIR /workspace/benchmarks
+USER ${USERNAME}
 RUN ./build-benchmark.sh all
 
 # Entry point
-USER ${USERNAME}
 WORKDIR /workspace
