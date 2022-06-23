@@ -2,7 +2,7 @@
 #ifndef KLEE_FEATUREHANDLER_H
 #define KLEE_FEATUREHANDLER_H
 
-#include "klee/ExecutionState.h"
+#include "ExecutionState.h"
 
 #include "Feature.h"
 

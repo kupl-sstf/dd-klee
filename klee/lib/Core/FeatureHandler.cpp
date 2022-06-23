@@ -7,8 +7,8 @@
 #include "StatsTracker.h"
 #include "SymMemoryFeature.h"
 
-#include "klee/ExecutionState.h"
-#include "klee/Internal/Support/FileHandling.h"
+#include "ExecutionState.h"
+#include "klee/Support/FileHandling.h"
 
 #include "llvm/Support/CommandLine.h"
 

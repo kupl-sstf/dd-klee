@@ -9,12 +9,11 @@
 
 #include "UserSearcher.h"
 
-#include "Searcher.h"
 #include "Executor.h"
+#include "MergeHandler.h"
+#include "Searcher.h"
 
-#include "klee/Internal/Support/ErrorHandling.h"
-#include "klee/MergeHandler.h"
-#include "klee/Solver/SolverCmdLine.h"
+#include "klee/Support/ErrorHandling.h"
 
 #include "llvm/Support/CommandLine.h"
 
@@ -49,6 +48,7 @@ cl::list<Searcher::CoreSearchType> CoreSearch(
         clEnumValN(Searcher::NURS_CPICnt, "nurs:cpicnt",
                    "use NURS with CallPath-Instr-Count"),
         clEnumValN(Searcher::NURS_QC, "nurs:qc", "use NURS with Query-Cost"),
+	/* DD-KLEE */
         clEnumValN(Searcher::Param, "param", "use Parameterized Search")
             KLEE_LLVM_CL_VAL_END),
     cl::cat(SearchCat));
@@ -82,13 +82,13 @@ cl::opt<std::string> BatchTime(
     cl::init("5s"),
     cl::cat(SearchCat));
 
-/*** Weight options for parameterized searcher ***/
+} // namespace
+
+/* DD-KLEE:  Weight options for parameterized searcher */
 cl::opt<std::string> Weight(
 		"weight",
 		cl::desc("Weight file for Parameterized Searcher"),
 		cl::cat(SearchCat));
-
-} // namespace
 
 void klee::initializeSearchOptions() {
   // default values
@@ -105,49 +105,51 @@ void klee::initializeSearchOptions() {
 
 bool klee::userSearcherRequiresMD2U() {
   return (std::find(CoreSearch.begin(), CoreSearch.end(), Searcher::NURS_MD2U) != CoreSearch.end() ||
-	  std::find(CoreSearch.begin(), CoreSearch.end(), Searcher::NURS_CovNew) != CoreSearch.end() ||
-	  std::find(CoreSearch.begin(), CoreSearch.end(), Searcher::NURS_ICnt) != CoreSearch.end() ||
-	  std::find(CoreSearch.begin(), CoreSearch.end(), Searcher::NURS_CPICnt) != CoreSearch.end() ||
+          std::find(CoreSearch.begin(), CoreSearch.end(), Searcher::NURS_CovNew) != CoreSearch.end() ||
+          std::find(CoreSearch.begin(), CoreSearch.end(), Searcher::NURS_ICnt) != CoreSearch.end() ||
+          std::find(CoreSearch.begin(), CoreSearch.end(), Searcher::NURS_CPICnt) != CoreSearch.end() ||
 	  std::find(CoreSearch.begin(), CoreSearch.end(), Searcher::NURS_QC) != CoreSearch.end() ||
 	  std::find(CoreSearch.begin(), CoreSearch.end(), Searcher::Param) != CoreSearch.end());
 }
 
-Searcher *getNewSearcher(Searcher::CoreSearchType type, Executor &executor, const std::string &weightFile) {
-  Searcher *searcher = NULL;
+
+Searcher *getNewSearcher(Searcher::CoreSearchType type, RNG &rng, PTree &processTree, Executor &executor, const std::string &weightFile) {
+  Searcher *searcher = nullptr;
   switch (type) {
-  case Searcher::DFS: searcher = new DFSSearcher(); break;
-  case Searcher::BFS: searcher = new BFSSearcher(); break;
-  case Searcher::RandomState: searcher = new RandomSearcher(); break;
-  case Searcher::RandomPath: searcher = new RandomPathSearcher(executor); break;
-  case Searcher::NURS_CovNew: searcher = new WeightedRandomSearcher(WeightedRandomSearcher::CoveringNew); break;
-  case Searcher::NURS_MD2U: searcher = new WeightedRandomSearcher(WeightedRandomSearcher::MinDistToUncovered); break;
-  case Searcher::NURS_Depth: searcher = new WeightedRandomSearcher(WeightedRandomSearcher::Depth); break;
-  case Searcher::NURS_RP: searcher = new WeightedRandomSearcher(WeightedRandomSearcher::RP); break;
-  case Searcher::NURS_ICnt: searcher = new WeightedRandomSearcher(WeightedRandomSearcher::InstCount); break;
-  case Searcher::NURS_CPICnt: searcher = new WeightedRandomSearcher(WeightedRandomSearcher::CPInstCount); break;
-  case Searcher::NURS_QC: searcher = new WeightedRandomSearcher(WeightedRandomSearcher::QueryCost); break;
-  case Searcher::Param: searcher = new ParameterizedSearcher(weightFile, executor); break;
+    case Searcher::DFS: searcher = new DFSSearcher(); break;
+    case Searcher::BFS: searcher = new BFSSearcher(); break;
+    case Searcher::RandomState: searcher = new RandomSearcher(rng); break;
+    case Searcher::RandomPath: searcher = new RandomPathSearcher(processTree, rng); break;
+    case Searcher::NURS_CovNew: searcher = new WeightedRandomSearcher(WeightedRandomSearcher::CoveringNew, rng); break;
+    case Searcher::NURS_MD2U: searcher = new WeightedRandomSearcher(WeightedRandomSearcher::MinDistToUncovered, rng); break;
+    case Searcher::NURS_Depth: searcher = new WeightedRandomSearcher(WeightedRandomSearcher::Depth, rng); break;
+    case Searcher::NURS_RP: searcher = new WeightedRandomSearcher(WeightedRandomSearcher::RP, rng); break;
+    case Searcher::NURS_ICnt: searcher = new WeightedRandomSearcher(WeightedRandomSearcher::InstCount, rng); break;
+    case Searcher::NURS_CPICnt: searcher = new WeightedRandomSearcher(WeightedRandomSearcher::CPInstCount, rng); break;
+    case Searcher::NURS_QC: searcher = new WeightedRandomSearcher(WeightedRandomSearcher::QueryCost, rng); break;
+    /* DD-KLEE */
+    case Searcher::Param: searcher = new ParameterizedSearcher(weightFile, executor); break;
   }
 
   return searcher;
 }
 
 Searcher *klee::constructUserSearcher(Executor &executor) {
-  
+
   std::string weightFile;
   if (!Weight.empty())
     weightFile = Weight;
   else
     weightFile = "";
 
-  Searcher *searcher = getNewSearcher(CoreSearch[0], executor, weightFile);
+  Searcher *searcher = getNewSearcher(CoreSearch[0], executor.theRNG, *executor.processTree, executor, weightFile);
 
   if (CoreSearch.size() > 1) {
     std::vector<Searcher *> s;
     s.push_back(searcher);
 
     for (unsigned i = 1; i < CoreSearch.size(); i++)
-      s.push_back(getNewSearcher(CoreSearch[i], executor, weightFile));
+      s.push_back(getNewSearcher(CoreSearch[i], executor.theRNG, *executor.processTree, executor, weightFile));
 
     searcher = new InterleavedSearcher(s);
   }
@@ -162,12 +164,6 @@ Searcher *klee::constructUserSearcher(Executor &executor) {
   }
 
   if (UseMerge) {
-    if (std::find(CoreSearch.begin(), CoreSearch.end(), Searcher::RandomPath) !=
-        CoreSearch.end()) {
-      klee_error("use-merge currently does not support random-path, please use "
-                 "another search strategy");
-    }
-
     auto *ms = new MergingSearcher(searcher);
     executor.setMergingSearcher(ms);
 

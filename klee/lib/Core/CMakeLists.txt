@@ -10,18 +10,13 @@ klee_add_component(kleeCore
   AddressSpace.cpp
   MergeHandler.cpp
   CallPathManager.cpp
-  ConstraintFeature.cpp
   Context.cpp
   CoreStats.cpp
   ExecutionState.cpp
   Executor.cpp
   ExecutorUtil.cpp
   ExternalDispatcher.cpp
-  Feature.cpp
-  FeatureHandler.cpp
-  FeatureStats.cpp
   ImpliedValue.cpp
-  InstructionFeature.cpp
   Memory.cpp
   MemoryManager.cpp
   PTree.cpp
@@ -29,9 +24,16 @@ klee_add_component(kleeCore
   SeedInfo.cpp
   SpecialFunctionHandler.cpp
   StatsTracker.cpp
-  SymMemoryFeature.cpp
   TimingSolver.cpp
   UserSearcher.cpp
+  
+  # DD-KLEE #
+  Feature.cpp
+  FeatureHandler.cpp
+  FeatureStats.cpp
+  SymMemoryFeature.cpp
+  ConstraintFeature.cpp
+  InstructionFeature.cpp
 )
 
 # TODO: Work out what the correct LLVM components are for

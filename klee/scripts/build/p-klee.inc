@@ -4,7 +4,7 @@ validate_build_config_klee() {
 
 setup_build_variables_klee() {
   KLEE_SUFFIX="${LLVM_VERSION_SHORT}${SOLVER_SUFFIX}${SANITIZER_SUFFIX}"
-  KLEE_BUILD_DIR="${BASE}/${BUILD_DIR}${KLEE_SUFFIX}"
+  KLEE_BUILD_DIR="${BASE}/klee_build${KLEE_SUFFIX}"
   KLEE_SRC="$DIR/../../"
 }
 
@@ -22,8 +22,8 @@ build_klee() {
     "-DGTEST_SRC_DIR=${GTEST_INSTALL_PATH}"
     "-DENABLE_UNIT_TESTS=TRUE"
     "-DENABLE_SYSTEM_TESTS=TRUE"
+    "-DENABLE_DOXYGEN=${ENABLE_DOXYGEN}"
     "-DLIT_ARGS=-v"
-		"-DENABLE_DOXYGEN=${ENABLE_DOXYGEN}"
   )
 
 
@@ -53,6 +53,11 @@ if [ "${USE_LIBCXX}" -eq 1 ]; then
     "-DENABLE_KLEE_LIBCXX=TRUE"
     "-DKLEE_LIBCXX_DIR=${LIBCXX_INSTALL}"
     "-DKLEE_LIBCXX_INCLUDE_DIR=${LIBCXX_INSTALL}/include/c++/v1"
+  )
+  local LLVM_VERSION_MAJOR="${LLVM_VERSION/.*/}"
+  [[ "${LLVM_VERSION_MAJOR}" -ge 8 ]] && CMAKE_ARGUMENTS+=(
+    "-DENABLE_KLEE_EH_CXX=TRUE"
+    "-DKLEE_LIBCXXABI_SRC_DIR=${LIBCXX_SRC}/libcxxabi"
   )
 else
   CMAKE_ARGUMENTS+=(
@@ -185,6 +190,8 @@ fi
 
   source "${KLEE_BUILD_DIR}/.build_command"
   make -j$(nproc) || make || return 1
+
+  touch "${KLEE_BUILD_DIR}/.is_installed"
 }
 
 install_klee() {
@@ -212,4 +219,16 @@ get_build_artifacts_klee() {
     setup_build_variables_klee
     echo "${KLEE_BUILD_DIR}"
   )
+}
+
+# Check if the binary artifact is installed
+is_installed_klee() {
+  (
+    setup_build_variables_klee
+    [[ -f "${KLEE_BUILD_DIR}"/.is_installed ]]
+  ) || return 1
+}
+
+setup_artifact_variables_klee() {
+  setup_build_variables_klee
 }

@@ -2,7 +2,7 @@
 #ifndef KLEE_FEATURESTATS_H
 #define KLEE_FEATURESTATS_H
 
-#include "klee/Statistic.h"
+#include "klee/Statistics/Statistic.h"
 
 namespace klee {
 namespace stats {

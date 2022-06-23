@@ -32,6 +32,14 @@ If you need further infomation use `--help` option:
 $ ./build-benchmark.sh --help
 ```
 
+### Build Your Own Project
+You can build your own project with `configure` and `make` build system with the provided script.
+For example, the following command will build `src/binary` executable in `path/to/your-project`:
+```bash
+$ ./build-benchmark.sh path/to/your-project:src/binary
+# see path/to/your-project/obj-llvm and path/to/your-project/obj-gcov
+```
+
 ## Requirements
 Install dependencies with following command:
 ```bash
