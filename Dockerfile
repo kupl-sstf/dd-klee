@@ -101,7 +101,7 @@ COPY --chown=${USERNAME}:${USERNAME} paradyse /workspace/paradyse
 COPY symtuner/symtuner /opt/symtuner/symtuner
 COPY symtuner/setup.py /opt/symtuner/setup.py
 RUN pip3 install /opt/symtuner
-COPY --chown=${USERNAME}:${USERNAME} symtuner/README.md /workspace/symtuner
+COPY --chown=${USERNAME}:${USERNAME} symtuner/README.md /workspace/symtuner/README.md
 
 # Benchmarks
 COPY --chown=${USERNAME}:${USERNAME} benchmarks/build-benchmark.sh benchmarks/README.md /workspace/benchmarks/
