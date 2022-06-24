@@ -113,6 +113,8 @@ Pointers to get you started:
 
 - [SymTuner(Maximizing the Power of Symbolic Execution by Adaptively Tuning External Parameters)](symtuner)
 
+- [HOMI(Making Symbolic Execution Promising by Learning Aggressive State-Pruning Strategy](homi)
+
 # Resources
 
 - [KLEE](http://klee.github.io)
