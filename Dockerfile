@@ -98,7 +98,8 @@ RUN mkdir -m 777 /workspace
 COPY --chown=${USERNAME}:${USERNAME} paradyse /workspace/paradyse
 
 # SymTuner
-COPY symtuner/symtuner symtuner/setup.py /opt/symtuner/
+COPY symtuner/symtuner /opt/symtuner/symtuner
+COPY symtuner/setup.py /opt/symtuner/setup.py
 RUN pip3 install /opt/symtuner
 COPY --chown=${USERNAME}:${USERNAME} symtuner/README.md /workspace/symtuner
 
