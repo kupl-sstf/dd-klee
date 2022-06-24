@@ -4,12 +4,26 @@ For technical details, see our paper below:
 
 ## Install SymTuner
 
-Official SymTuner implementation is in [`skkusal/symtuner`](https://github.com/skkusal/symtuner).
+We offer SymTuner compatabile to KLEE 2.2.
+
+### Requirements
+
+SymTuner needs `python>=3.6` and `pip`.
+
+In Ubuntu 20.04, you can install requirements with the following commands:
+```bash
+$ sudo apt-get update
+$ sudo apt-get install python3 python3-pip
+```
+
+### Installation
+
 You can easily install it with your `pip`.
 
-For example, in Ubuntu 20.04 LTS, use the following command:
+For example, in Ubuntu 20.04 LTS, use the following commands:
 ```bash
-$ sudo pip3 install git+https://github.com/skkusal/symtuner.git
+# Move to dd-klee/symtuner
+$ sudo pip3 install .
 # You can find symtuner executable in your system.
 $ symtuner --help
 ```
