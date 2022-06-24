@@ -101,8 +101,9 @@ RUN mkdir -m 777 /workspace
 COPY --chown=${USERNAME}:${USERNAME} paradyse /workspace/paradyse
 
 # SymTuner
-RUN pip3 install git+https://github.com/skkusal/symtuner.git
-COPY --chown=${USERNAME}:${USERNAME} symtuner /workspace/symtuner
+COPY symtuner/symtuner symtuner/setup.py /opt/symtuner/
+RUN pip3 install /opt/symtuner
+COPY --chown=${USERNAME}:${USERNAME} symtuner/README.md /workspace/symtuner
 
 # Benchmarks
 COPY --chown=${USERNAME}:${USERNAME} benchmarks/build-benchmark.sh benchmarks/README.md /workspace/benchmarks/
