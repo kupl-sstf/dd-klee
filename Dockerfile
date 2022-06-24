@@ -52,20 +52,17 @@ ENV PATH=/usr/lib/llvm-11/bin:$PATH
 # Install DD-KLEE
 
 ENV STP_VERSION=2.3.3
-WORKDIR /opt
-RUN git clone -b ${STP_VERSION} --depth 1 https://github.com/stp/stp.git
+RUN git clone -b ${STP_VERSION} --depth 1 https://github.com/stp/stp.git /opt/stp
 WORKDIR /opt/stp/build
 RUN cmake -DBUILD-SHARED_LIBS:BOOL=OFF -DENABLE_PYTHON_INTERFACE:BOOL=OFF .. && \
     make && \
     make install
 
 ENV KLEE_UCLIBC_VERSION=klee_uclibc_v1.3
-WORKDIR /opt
-RUN git clone -b ${KLEE_UCLIBC_VERSION} --depth 1 https://github.com/klee/klee-uclibc.git
+RUN git clone -b ${KLEE_UCLIBC_VERSION} --depth 1 https://github.com/klee/klee-uclibc.git /opt/klee-uclibc
 WORKDIR /opt/klee-uclibc
 RUN ./configure --make-llvm-lib && make
 
-WORKDIR /opt
 COPY klee /opt/klee-src
 WORKDIR /opt/klee-src
 RUN LLVM_VERSION=11 BASE=/opt/klee-libcxx ./scripts/build/build.sh libcxx
@@ -101,8 +98,10 @@ RUN mkdir -m 777 /workspace
 COPY --chown=${USERNAME}:${USERNAME} paradyse /workspace/paradyse
 
 # SymTuner
-RUN pip3 install git+https://github.com/skkusal/symtuner.git
-COPY --chown=${USERNAME}:${USERNAME} symtuner /workspace/symtuner
+COPY symtuner/symtuner /opt/symtuner/symtuner
+COPY symtuner/setup.py /opt/symtuner/setup.py
+RUN pip3 install /opt/symtuner
+COPY --chown=${USERNAME}:${USERNAME} symtuner/README.md /workspace/symtuner/README.md
 
 # Benchmarks
 COPY --chown=${USERNAME}:${USERNAME} benchmarks/build-benchmark.sh benchmarks/README.md /workspace/benchmarks/
