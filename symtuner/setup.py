@@ -3,14 +3,10 @@ from setuptools import setup
 
 from symtuner import __version__
 
-with open('./README.md') as f:
-    LONG_DESCRIPTION = f.read()
-
 setup(
     name='symtuner',
     version=__version__,
     description='SymTuner: Maximizing the Power of Symbolic Execution by Adaptively Tuning External Parameters',
-    long_description=LONG_DESCRIPTION,
     python_version='>=3.6',
     packages=find_packages(include=('symtuner', 'symtuner.*')),
     include_package_data=True,
