@@ -61,6 +61,21 @@
 #include <iterator>
 #include <sstream>
 
+#include <time.h>
+#include <stdio.h>
+#include <string.h>
+#include <string>
+#include <stdlib.h>
+
+const std::string currentTime() {
+    time_t now = time(0);
+    struct tm tstruct;
+    char buf[80];
+    tstruct = *localtime(&now);
+    strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+    return buf;
+}
+
 
 using namespace llvm;
 using namespace klee;
@@ -293,6 +308,7 @@ namespace {
 
 namespace klee {
 extern cl::opt<std::string> MaxTime;
+extern cl::opt<bool> Homi;
 class ExecutionState;
 }
 
@@ -1149,6 +1165,64 @@ linkWithUclibc(StringRef libDir, std::string opt_suffix,
 #endif
 
 int main(int argc, char **argv, char **envp) {
+  std::string naming;
+  std::string dirname;
+  std::string trial;
+
+  if (Homi) {
+    FILE *t = fopen("time_result", "a");
+    fprintf(t, "start: %s\n", currentTime().c_str());
+    fclose(t);
+
+    naming="";
+    dirname="0";
+    trial="0";
+    //1prune_dd_nurs:covnew_random-path_
+    std::string pgm="";
+    std::string homi="";
+    std::string stgy="";
+    std::string parallel_id="";
+
+
+    for (int i=0; i<argc; i++){
+      std::string str(argv[i]);
+      if(str.find(".bc")!=std::string::npos){
+        pgm = str.substr(0, str.find(".bc"));
+      }
+      else if(str.find("--search=")!=std::string::npos){
+        std::string delimiter="--search=";
+        std::string stgy1 = str.substr(str.find(delimiter)+delimiter.length(), str.length());
+        stgy=stgy.append(stgy1);
+      }
+      else if(str.find("-dirname=")!=std::string::npos){
+        std::string delimiter="-dirname=";
+        dirname = str.substr(str.find(delimiter)+delimiter.length(), str.length());
+      }
+      else if(str.find("-trial=")!=std::string::npos){
+        std::string delimiter="-trial=";
+        trial = str.substr(str.find(delimiter)+delimiter.length(), str.length());
+      }
+
+      else if(str.find("-parallel=")!=std::string::npos){
+        std::string delimiter="-parallel=";
+        parallel_id = str.substr(str.find(delimiter)+delimiter.length(), str.length());
+      }
+      else if(str.find("-homi")!=std::string::npos){
+        std::string delimiter="-";
+        homi = str.substr(str.find(delimiter)+delimiter.length(), str.length());
+      }
+    }
+
+    naming=naming.append(parallel_id);
+    naming=naming.append(homi+"_");
+    naming=naming.append(pgm+"_");
+    if (stgy=="random-pathnurs:covnew")
+        stgy="roundrobin";
+    naming=naming.append(stgy+"_");
+
+    fprintf(stdout, "%s\n",naming.c_str());
+    fprintf(stdout, "dir_name: %s, trial: %s\n", dirname.c_str(), trial.c_str());
+  }
   atexit(llvm_shutdown);  // Call llvm_shutdown() on exit.
 
   KCommandLine::HideOptions(llvm::cl::GeneralCategory);
@@ -1464,7 +1538,11 @@ int main(int argc, char **argv, char **envp) {
                    << " bytes)"
                    << " (" << ++i << "/" << kTestFiles.size() << ")\n";
       // XXX should put envp in .ktest ?
-      interpreter->runFunctionAsMain(mainFn, out->numArgs, out->args, pEnvp);
+      if (Homi) {
+        interpreter->runFunctionAsMain(mainFn, out->numArgs, out->args, pEnvp, naming, dirname, trial);
+      } else {
+        interpreter->runFunctionAsMain(mainFn, out->numArgs, out->args, pEnvp);
+      }
       if (interrupted) break;
     }
     interpreter->setReplayKTest(0);
@@ -1513,7 +1591,11 @@ int main(int argc, char **argv, char **envp) {
                    sys::StrError(errno).c_str());
       }
     }
-    interpreter->runFunctionAsMain(mainFn, pArgc, pArgv, pEnvp);
+    if (Homi) {
+      interpreter->runFunctionAsMain(mainFn, pArgc, pArgv, pEnvp, naming, dirname, trial);
+    } else {
+      interpreter->runFunctionAsMain(mainFn, pArgc, pArgv, pEnvp);
+    }
 
     while (!seeds.empty()) {
       kTest_free(seeds.back());

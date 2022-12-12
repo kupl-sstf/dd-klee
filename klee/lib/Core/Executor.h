@@ -119,6 +119,14 @@ public:
     Unhandled,
   };
 
+  // Homi //////////////////////////////////////////////////////////////
+  std::map<int, ExecutionState*> id_state_map_;
+  std::map<std::string, unsigned> feat_id_map_;
+  std::vector<double> wvector_;
+  std::vector<unsigned> pratio_vec_;
+  std::vector<int> state_size_vec_;
+  //////////////////////////////////////////////////////////////////////
+
   /// The random number generator.
   RNG theRNG;
 
@@ -234,10 +242,21 @@ private:
 
   llvm::Function* getTargetFunction(llvm::Value *calledVal,
                                     ExecutionState &state);
+
+  // Homi //////////////////////////////////////////////////////////////
+  std::map<std::string, unsigned> read_feature(std::string dirname, std::string naming);
+  std::vector<unsigned> read_pruningratio(std::string dirname, std::string naming);
+  std::vector<std::vector<int>> extract_feature(const std::set<ExecutionState*, ExecutionStateIDCompare> &states,
+                                                std::map<std::string,unsigned> &feat_id_map);
+  int prune_states(std::string wv_name, const std::vector<std::vector<int> > &fv_vecs,
+                   std::vector<double> &wvectors, int &pruning_ratio);
+  //////////////////////////////////////////////////////////////////////                                  
   
   void executeInstruction(ExecutionState &state, KInstruction *ki);
 
   void run(ExecutionState &initialState);
+
+  void run(ExecutionState &initialState, std::string, std::string, std::string);
 
   // Given a concrete object in our [klee's] address space, add it to 
   // objects checked code can reference.
@@ -519,6 +538,9 @@ public:
 
   void runFunctionAsMain(llvm::Function *f, int argc, char **argv,
                          char **envp) override;
+
+  void runFunctionAsMain(llvm::Function *f, int argc, char **argv,
+                         char **envp, std::string, std::string, std::string) override;
 
   /*** Runtime options ***/
 

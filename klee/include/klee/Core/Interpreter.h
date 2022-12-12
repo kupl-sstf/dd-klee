@@ -136,6 +136,14 @@ public:
                                  char **argv,
                                  char **envp) = 0;
 
+  virtual void runFunctionAsMain(llvm::Function *f,
+                                 int argc,
+                                 char **argv,
+                                 char **envp,
+                                 std::string naming,
+                                 std::string dirname,
+                                 std::string trial) = 0;
+
   /*** Runtime options ***/
 
   virtual void setHaltExecution(bool value) = 0;
