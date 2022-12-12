@@ -47,3 +47,6 @@ klee/examples/**
 
 ### Vagrant Patch ###
 *.box
+
+# KLEE build directory
+klee/build
